@@ -12,7 +12,7 @@ scalaVersion := "2.10.2"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.1.0"
 
-libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.25.0" % "compile"
+libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "compile"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.6.1" % "compile"
 
