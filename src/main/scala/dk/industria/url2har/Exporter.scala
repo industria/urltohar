@@ -15,7 +15,17 @@ class Exporter(config: Configuration) {
 
 
   private def setupBrowser(): WebDriver = {
-    val  profile = new FirefoxProfile()
+
+    val profile = if(config.profile.isDefined) {
+      val filename = config.profile.get.replace("~", System.getProperty("user.home"))
+      val file = FileSystems.getDefault.getPath(filename).toFile()
+      if(config.verbose) {
+	Console.println(s"Using profile ${filename}")
+      }
+      new FirefoxProfile(file)
+    } else {
+      new FirefoxProfile()
+    }
 
     val firebugExtension = new File("firebug-1.12.0-fx.xpi").getAbsoluteFile()
     if(config.verbose) {

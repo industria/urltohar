@@ -12,6 +12,8 @@ object Main extends App {
 
     opt[Unit]("verbose") action { (_, c) => c.copy(verbose = true) } text("verbose output")
 
+    opt[String]("profile") action { (v, c) => c.copy(profile = Option(v)) } text("Path to the Firefox profile to use.")
+
     arg[String]("<input>") required() action { (v, c) => c.copy(input = v) } validate { x => if (isInputValid(x)) success else failure(s"[${x}] is not a readable file.") }  text("File containing URL to generate HAR files for.")
     
     arg[String]("<output>") required() action { (v, c) => c.copy(output = v) } validate { x => if (isOutputValid(x)) success else failure(s"[${x}] is not a writable directory.") }  text("Directory where the HAR files are written.")
