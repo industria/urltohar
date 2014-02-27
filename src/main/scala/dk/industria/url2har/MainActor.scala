@@ -16,6 +16,7 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
   private var urlProducer: ActorRef = null
   private var urlExporter: ActorRef = null
   private var progressWriter: ActorRef = null
+  private var failureWriter: ActorRef = null
 
   /** Called when an Actor is started.
    */
@@ -34,7 +35,8 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
   private def setupApplication() = {
     urlProducer = context.actorOf(Props(classOf[UrlProducer], config), "UrlProducer")
     urlExporter = context.actorOf(Props(classOf[UrlExporter], config), "Exporter")
-    progressWriter = context.actorOf(Props(classOf[ProgressWriter], config), "Progress")
+    progressWriter = context.actorOf(Props(classOf[UrlWriter], config, "processed.urls"), "Processed")
+    failureWriter = context.actorOf(Props(classOf[UrlWriter], config, "failed.urls"), "Failed")
   }
 
 
@@ -49,13 +51,9 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
 
 
   private def failedURL(url: String): Unit = {
-    log.info("FAILED : [{}]", url)
-
-    // TODO: write failed... maybe retry ?
-
-
+    log.info("Failed [{}]", url)
+    failureWriter ! URL(url)
     urlProducer ! Produce(0)
-
   }
 
 
