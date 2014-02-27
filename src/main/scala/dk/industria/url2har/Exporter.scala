@@ -5,6 +5,8 @@ import java.nio.file.{FileSystems, Path}
 
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxProfile}
+import org.openqa.selenium.support.events.{AbstractWebDriverEventListener, EventFiringWebDriver, WebDriverEventListener}
+
 
 import scala.io.Source
 
@@ -61,7 +63,13 @@ class Exporter(config: Configuration) {
   }
 
   def export() = {
-    val driver = setupBrowser()
+    val webdriver = setupBrowser()
+
+    val events = new BrowserEvents()
+
+    val driver = new EventFiringWebDriver(webdriver)
+    driver.register(events)
+
     if(config.verbose) {
       Console.println("Waiting 5 seconds for things to settle down.")
     }
@@ -73,7 +81,7 @@ class Exporter(config: Configuration) {
 	Console.print(s"Navigate to [${line}]...")
       }
       driver.navigate.to(line)
-      Thread.sleep(5000)
+//      Thread.sleep(5000)
 
       if(config.verbose) {
 	Console.println("done")
@@ -86,6 +94,7 @@ class Exporter(config: Configuration) {
     }
     Thread.sleep(5000)
 
+    driver.unregister(events)
 
     driver.close()
     

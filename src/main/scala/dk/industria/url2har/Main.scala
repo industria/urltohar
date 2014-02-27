@@ -1,5 +1,7 @@
 package dk.industria.url2har
 
+import akka.actor.{ActorSystem, Props}
+
 import java.nio.file.{Files, FileSystems, Path}
 
 
@@ -10,9 +12,13 @@ object Main extends App {
 
     help("help") text("prints this usage text")
 
-    opt[Unit]("verbose") action { (_, c) => c.copy(verbose = true) } text("verbose output")
+    opt[Unit]("verbose") action { (_, c) => c.copy(verbose = true) } text("verbose output.")
+
+    opt[Int]("timeout") action { (v, c) => c.copy(pageLoadTimeout = v) } text("Timeout in seconds to use when performing a page load (default: 300).")
 
     opt[String]("profile") action { (v, c) => c.copy(profile = Option(v)) } text("Path to the Firefox profile to use.")
+
+    opt[String]("progress") action { (v, c) => c.copy(progress = Option(v)) } text("Path to a progress file.")
 
     arg[String]("<input>") required() action { (v, c) => c.copy(input = v) } validate { x => if (isInputValid(x)) success else failure(s"[${x}] is not a readable file.") }  text("File containing URL to generate HAR files for.")
     
@@ -21,8 +27,18 @@ object Main extends App {
 
   parser.parse(args, Configuration()) map { config => {
 
-    val exporter = new Exporter(config)
-    exporter.export()
+//    val exporter = new Exporter(config)
+//    exporter.export()
+    val system = ActorSystem("Browsing")
+
+
+    system.actorOf(Props(classOf[MainActor], config), "Main")
+
+
+//    system.shutdown();
+
+
+
   }
 						   
   } getOrElse {
