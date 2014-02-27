@@ -27,18 +27,8 @@ object Main extends App {
 
   parser.parse(args, Configuration()) map { config => {
 
-//    val exporter = new Exporter(config)
-//    exporter.export()
     val system = ActorSystem("Browsing")
-
-
     system.actorOf(Props(classOf[MainActor], config), "Main")
-
-
-//    system.shutdown();
-
-
-
   }
 						   
   } getOrElse {

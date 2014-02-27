@@ -19,6 +19,7 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
 
   private var urlProducer: ActorRef = null
   private var urlExporter: ActorRef = null
+  private var progressWriter: ActorRef = null
 
   private var watchdog: Cancellable = null
 
@@ -39,25 +40,18 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
   private def setupApplication() = {
     urlProducer = context.actorOf(Props(classOf[UrlProducer], config), "UrlProducer")
     urlExporter = context.actorOf(Props(classOf[UrlExporter], config), "Exporter")
+    progressWriter = context.actorOf(Props(classOf[ProgressWriter], config), "Progress")
   }
 
 
   private def scheduleUrl(url: String) = {
     log.info("Handle URL [{}]", url)
     urlExporter ! URL(url)
-    
-    
-    // TODO: set timer that will trigger moving on if no progress was made...
-
   }
 
   private def exported(url: String): Unit = {
-
-//    watchdog.cancel()
-
-
+    progressWriter ! URL(url)
     urlProducer ! Produce(0)
-
   }
 
 
