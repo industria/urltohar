@@ -9,19 +9,13 @@ import scala.io.Source
 import scala.concurrent.duration._
 
 class MainActor(config: Configuration) extends Actor with ActorLogging {
-
-
   private case object Setup
   private case object Start
   private case object DelayedShutdown
-  
-
 
   private var urlProducer: ActorRef = null
   private var urlExporter: ActorRef = null
   private var progressWriter: ActorRef = null
-
-  private var watchdog: Cancellable = null
 
   /** Called when an Actor is started.
    */

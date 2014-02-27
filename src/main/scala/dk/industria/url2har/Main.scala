@@ -2,6 +2,7 @@ package dk.industria.url2har
 
 import akka.actor.{ActorSystem, Props}
 
+import java.io.IOException
 import java.nio.file.{Files, FileSystems, Path}
 
 
@@ -18,7 +19,7 @@ object Main extends App {
 
     opt[String]("profile") action { (v, c) => c.copy(profile = Option(v)) } text("Path to the Firefox profile to use.")
 
-    opt[String]("progress") action { (v, c) => c.copy(progress = Option(v)) } text("Path to a progress file.")
+    opt[String]("progress") action { (v, c) => c.copy(progress = Option(v)) } validate { x => if (isProgressValid(x)) success else failure(s"[${x}] is not a writable file.")} text("Path to a progress file.")
 
     arg[String]("<input>") required() action { (v, c) => c.copy(input = v) } validate { x => if (isInputValid(x)) success else failure(s"[${x}] is not a readable file.") }  text("File containing URL to generate HAR files for.")
     
@@ -36,8 +37,6 @@ object Main extends App {
   }
 
 
-
-
   private def isInputValid(filename: String): Boolean = {
     val path = FileSystems.getDefault().getPath(filename)
     (Files.isRegularFile(path) && Files.isReadable(path))
@@ -48,5 +47,16 @@ object Main extends App {
     val path = FileSystems.getDefault().getPath(filename)
     //(Files.isDirectory(path) && Files.isWritable(path))
     true
+  }
+
+  private def isProgressValid(filename: String): Boolean = {
+    val path = FileSystems.getDefault().getPath(filename)
+    try {
+      val out = Files.newOutputStream(path)
+      out.close()
+      true
+    } catch {
+      case e: IOException => false
+    }
   }
 }

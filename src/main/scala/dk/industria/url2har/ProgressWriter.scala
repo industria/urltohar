@@ -2,7 +2,7 @@ package dk.industria.url2har
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable, Props}
 
-import java.nio.file.{FileSystems, Path}
+import java.nio.file.{Files, FileSystems, Path}
 
 import java.io.PrintWriter
 
@@ -21,7 +21,7 @@ class ProgressWriter(config: Configuration) extends Actor with ActorLogging {
     
     if(writeProgress) {
       val path = FileSystems.getDefault.getPath(config.progress.get)
-      progressWriter = new PrintWriter(path.toFile())
+      progressWriter = new PrintWriter(Files.newOutputStream(path), true)
     }
 
   }
