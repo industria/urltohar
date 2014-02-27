@@ -40,6 +40,7 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
 
   private def scheduleUrl(url: String) = {
     log.info("Handle URL [{}]", url)
+
     urlExporter ! URL(url)
   }
 
@@ -51,10 +52,10 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
 
 
   private def failedURL(url: String): Unit = {
-
     log.info("FAILED : [{}]", url)
 
     // TODO: write failed... maybe retry ?
+
 
     urlProducer ! Produce(0)
 
@@ -62,14 +63,10 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
 
 
   private def scheduleShutdown(): Unit = {
-
     log.info("Scheduling shutdown in 10 seconds")
 
     import context.dispatcher
-
-
     context.system.scheduler.scheduleOnce(10 seconds, self, DelayedShutdown)
-
   }
 
 

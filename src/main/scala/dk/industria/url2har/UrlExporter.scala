@@ -100,26 +100,16 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     val profile = if(config.profile.isDefined) {
       val filename = config.profile.get.replace("~", System.getProperty("user.home"))
       val file = FileSystems.getDefault.getPath(filename).toFile()
-      if(config.verbose) {
-	Console.println(s"Using profile ${filename}")
-      }
       new FirefoxProfile(file)
     } else {
       new FirefoxProfile()
     }
 
     val firebugExtension = new File("firebug-1.12.0-fx.xpi").getAbsoluteFile()
-    if(config.verbose) {
-      Console.println(s"Installing extension ${firebugExtension}")
-    }
     profile.addExtension(firebugExtension)
 
     val netexportExtension = new File("netExport-0.8.xpi").getAbsoluteFile()
-    if(config.verbose) {
-      Console.println(s"Installing extension ${netexportExtension}")
-    }
     profile.addExtension(netexportExtension)
-
     profile.setPreference("app.update.enabled", false)
     
     // Set default Firebug preferences
@@ -133,9 +123,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     profile.setPreference("extensions.firebug.netexport.showPreview", false)
 
     val outputPathFull = outputPath.toAbsolutePath().toString()
-    if(config.verbose) {
-      Console.println(s"Output path set in profile [${outputPathFull}]")
-    }
+
     profile.setPreference("extensions.firebug.netexport.defaultLogDir", outputPathFull)
 
     val eventWebDriver = new EventFiringWebDriver(new FirefoxDriver(profile))
@@ -156,9 +144,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       case e: TimeoutException => {
 	this.driver.quit()
 	this.driver = setupDriver()
-
 	sender ! FailedToExportURL(url)
-//	log.error(e, "timed out")
       }
     }
   } 
@@ -169,6 +155,5 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     case URL(url) => navigateTo(sender, url)
     case _ => log.error("Unknown message")
   }
-
 
 }
