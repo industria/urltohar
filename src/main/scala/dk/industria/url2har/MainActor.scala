@@ -65,7 +65,6 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
   }
 
 
-
   /** Receive message. */
   def receive = {
     case Setup => setupApplication()
@@ -80,6 +79,5 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
     }
     case _ => log.error("Unknown message")
   }
-
 
 }
