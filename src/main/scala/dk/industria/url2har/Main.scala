@@ -13,8 +13,6 @@ object Main extends App {
 
     help("help") text("prints this usage text")
 
-    opt[Unit]("verbose") action { (_, c) => c.copy(verbose = true) } text("verbose output.")
-
     opt[Int]("timeout") action { (v, c) => c.copy(pageLoadTimeout = v) } text("Timeout in seconds to use when performing a page load (default: 300).")
 
     opt[String]("profile") action { (v, c) => c.copy(profile = Option(v)) } text("Path to the Firefox profile to use.")

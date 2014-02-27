@@ -79,24 +79,18 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
   def onException(throwable: Throwable, driver: WebDriver): Unit = {
   }
 
-
   def afterNavigateTo(url: String, driver: WebDriver): Unit = {
     val delta = Platform.currentTime - this.beforeTime
-    log.info("After navigate to [{}] - [{}]", url, delta);
+    log.info("[{}] - [{}ms]", url, delta);
 
     sender ! ExportedURL(url)
   }
 
-
   def beforeNavigateTo(url: String, driver: WebDriver): Unit = {
-    this.beforeTime = scala.compat.Platform.currentTime
-    log.info("Before navigate to [{}]", url);
-
+    this.beforeTime = Platform.currentTime
   }
 
-
   private def setupDriver(): WebDriver = {
-
     val profile = if(config.profile.isDefined) {
       val filename = config.profile.get.replace("~", System.getProperty("user.home"))
       val file = FileSystems.getDefault.getPath(filename).toFile()

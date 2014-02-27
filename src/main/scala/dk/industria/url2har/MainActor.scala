@@ -39,8 +39,6 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
 
 
   private def scheduleUrl(url: String) = {
-    log.info("Handle URL [{}]", url)
-
     urlExporter ! URL(url)
   }
 
@@ -48,7 +46,6 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
     progressWriter ! URL(url)
     urlProducer ! Produce(0)
   }
-
 
 
   private def failedURL(url: String): Unit = {
