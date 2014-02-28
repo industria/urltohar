@@ -10,11 +10,13 @@ import java.nio.file.{Files, FileSystems, Path}
 object Main extends App {
 
   val parser = new scopt.OptionParser[Configuration]("url2har") {
-    head("url2har", "0.1")
+    head("url2har", "0.2")
 
     help("help") text("prints this usage text")
 
     opt[Int]("timeout") action { (v, c) => c.copy(pageLoadTimeout = v) } text("Timeout in seconds to use when performing a page load (default: 60).")
+
+    opt[Int]("restart") action { (v, c) => c.copy(restart = v) } text("Restart browser for every batch of this size. (default: 0 meaning nu restart).")
 
     opt[String]("profile") action { (v, c) => c.copy(profile = Option(v)) } text("Path to the Firefox profile to use.")
 

@@ -25,6 +25,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
 
   var beforeTime: Long = 0L
 
+  var restartBatchSize: Int = 0
 
   /** Called when an Actor is started.
    */
@@ -90,6 +91,13 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     this.beforeTime = Platform.currentTime
   }
 
+  private def restartDriver(): Unit = {
+    this.driver.quit()
+    this.driver = setupDriver()
+    this.restartBatchSize = 0
+  }
+
+
   private def setupDriver(): WebDriver = {
     val profile = if(config.profile.isDefined) {
       val filename = config.profile.get.replace("~", System.getProperty("user.home"))
@@ -137,12 +145,15 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
 
       val element = driver.findElement(By.tagName("body"))
 
-      sender ! ExportedURL(url)
+      this.restartBatchSize = this.restartBatchSize + 1
+      if((0 < config.restart) && (config.restart <= this.restartBatchSize)) {
+	restartDriver()
+      }
 
+      sender ! ExportedURL(url)
     } catch {
       case e: TimeoutException => {
-	this.driver.quit()
-	this.driver = setupDriver()
+	restartDriver()
 	sender ! FailedToExportURL(url)
       }
       case e :NoSuchElementException => {
