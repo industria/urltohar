@@ -99,7 +99,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       new FirefoxProfile()
     }
 
-    val firebugExtension = new File("firebug-1.12.0-fx.xpi").getAbsoluteFile()
+    val firebugExtension = new File("firebug-1.12.6-fx.xpi").getAbsoluteFile()
     profile.addExtension(firebugExtension)
 
     val netexportExtension = new File("netExport-0.8.xpi").getAbsoluteFile()
@@ -107,7 +107,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     profile.setPreference("app.update.enabled", false)
     
     // Set default Firebug preferences
-    profile.setPreference("extensions.firebug.currentVersion", "1.12.0")
+    profile.setPreference("extensions.firebug.currentVersion", "1.12.6")
     profile.setPreference("extensions.firebug.allPagesActivation", "on")
     profile.setPreference("extensions.firebug.defaultPanelName", "net")
     profile.setPreference("extensions.firebug.net.enableSites", true)
