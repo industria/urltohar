@@ -10,10 +10,11 @@ import scala.compat.Platform
 
 import scala.io.Source
 
-import org.openqa.selenium.{By, TimeoutException, WebDriver, WebElement}
+import org.openqa.selenium.{By, NoSuchElementException, TimeoutException, WebDriver, WebElement}
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxProfile}
 import org.openqa.selenium.support.events.{AbstractWebDriverEventListener, EventFiringWebDriver, WebDriverEventListener}
 
+import scala.concurrent.duration._
 
 class UrlExporter(config: Configuration) extends Actor with ActorLogging with WebDriverEventListener {
 
@@ -83,7 +84,6 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     val delta = Platform.currentTime - this.beforeTime
     log.info("[{}] - [{}ms]", url, delta);
 
-    sender ! ExportedURL(url)
   }
 
   def beforeNavigateTo(url: String, driver: WebDriver): Unit = {
@@ -123,7 +123,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     val eventWebDriver = new EventFiringWebDriver(new FirefoxDriver(profile))
 
     eventWebDriver.manage().timeouts().pageLoadTimeout(config.pageLoadTimeout, java.util.concurrent.TimeUnit.SECONDS)
-
+    eventWebDriver.manage().timeouts().implicitlyWait(config.pageLoadTimeout, java.util.concurrent.TimeUnit.SECONDS)
     eventWebDriver.register(this)
 
     eventWebDriver
@@ -134,10 +134,18 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
 
     try {
       driver.navigate.to(url)
+
+      val element = driver.findElement(By.tagName("body"))
+
+      sender ! ExportedURL(url)
+
     } catch {
       case e: TimeoutException => {
 	this.driver.quit()
 	this.driver = setupDriver()
+	sender ! FailedToExportURL(url)
+      }
+      case e :NoSuchElementException => {
 	sender ! FailedToExportURL(url)
       }
     }
