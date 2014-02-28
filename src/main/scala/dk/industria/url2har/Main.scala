@@ -2,6 +2,8 @@ package dk.industria.url2har
 
 import akka.actor.{ActorSystem, Props}
 
+import java.io.IOException
+
 import java.nio.file.{Files, FileSystems, Path}
 
 
@@ -39,8 +41,16 @@ object Main extends App {
   }
 
   private def isOutputValid(filename: String): Boolean = {
-    val path = FileSystems.getDefault().getPath(filename)
-    true
+
+    try {
+      val path = FileSystems.getDefault().getPath(filename)
+      if(Files.notExists(path)) {
+	Files.createDirectory(path)
+      }
+      true
+    } catch {
+      case e: IOException => false
+    }
   }
 
 }
