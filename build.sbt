@@ -6,25 +6,25 @@ description := "URL list to HAR files."
 
 organization := "dk.industria.url2har"
 
-scalacOptions ++= Seq("-unchecked", "-deprecation", "-optimise", "-feature", "-Xlint", "-language:postfixOps")
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xlint", "-language:postfixOps")
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.12.1"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.2.3" % "compile"
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4.16" % "compile"
 
-libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.2.3" % "compile"
+libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.4.16" % "compile"
 
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.1" % "compile"
 
-libraryDependencies += "com.github.scopt" %% "scopt" % "3.1.0"
+libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0"
 
-libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.40.0" % "compile"
+libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "3.0.1" % "compile"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.5" % "compile"
 
-libraryDependencies += "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-assemblySettings
+
 

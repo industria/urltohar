@@ -42,7 +42,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
   }
 
 
-  def afterChangeValueOf(element: WebElement, driver: WebDriver): Unit = {
+  def afterChangeValueOf(element: WebElement, driver: WebDriver, keysToSend: Array[CharSequence]): Unit = {
   }
 
   def afterClickOn(element: WebElement, driver: WebDriver): Unit = {
@@ -57,10 +57,13 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
   def afterNavigateForward(driver: WebDriver): Unit = {
   }
 
+  def afterNavigateRefresh(driver: WebDriver): Unit = {
+  }
+
   def afterScript(script: String, driver: WebDriver): Unit = {
   }
 
-  def beforeChangeValueOf(element: WebElement, driver: WebDriver): Unit = {
+  def beforeChangeValueOf(element: WebElement, driver: WebDriver, keysToSend: Array[CharSequence]): Unit = {
   }
 
   def beforeClickOn(element: WebElement, driver: WebDriver): Unit = {
@@ -73,6 +76,9 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
   }
 
   def beforeNavigateForward(driver: WebDriver): Unit = {
+  }
+
+  def beforeNavigateRefresh(driver: WebDriver): Unit = {
   }
 
   def beforeScript(script: String, driver: WebDriver): Unit = {
@@ -107,26 +113,14 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       new FirefoxProfile()
     }
 
-    val firebugExtension = new File("firebug-1.12.6-fx.xpi").getAbsoluteFile()
-    profile.addExtension(firebugExtension)
-
-    val netexportExtension = new File("netExport-0.8.xpi").getAbsoluteFile()
-    profile.addExtension(netexportExtension)
-    profile.setPreference("app.update.enabled", false)
+//    profile.setPreference("app.update.enabled", false)
     
-    // Set default Firebug preferences
-    profile.setPreference("extensions.firebug.currentVersion", "1.12.6")
-    profile.setPreference("extensions.firebug.allPagesActivation", "on")
-    profile.setPreference("extensions.firebug.defaultPanelName", "net")
-    profile.setPreference("extensions.firebug.net.enableSites", true)
-
-    // Set default NetExport preferences
-    profile.setPreference("extensions.firebug.netexport.alwaysEnableAutoExport", true)
-    profile.setPreference("extensions.firebug.netexport.showPreview", false)
-
     val outputPathFull = outputPath.toAbsolutePath().toString()
 
     profile.setPreference("extensions.firebug.netexport.defaultLogDir", outputPathFull)
+
+    profile.setPreference("devtools.netmonitor.har.enableAutoExportToFile", true)
+    profile.setPreference("devtools.netmonitor.har.defaultLogDir", outputPathFull)
 
     val eventWebDriver = new EventFiringWebDriver(new FirefoxDriver(profile))
 
