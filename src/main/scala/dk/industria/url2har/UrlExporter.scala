@@ -10,6 +10,8 @@ import scala.compat.Platform
 
 import scala.io.Source
 
+import io.github.bonigarcia.wdm.FirefoxDriverManager
+
 import org.openqa.selenium.{By, NoSuchElementException, TimeoutException, WebDriver, WebElement}
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxProfile}
 import org.openqa.selenium.support.events.{AbstractWebDriverEventListener, EventFiringWebDriver, WebDriverEventListener}
@@ -105,9 +107,9 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
 
 
   private def setupDriver(): WebDriver = {
-
-    val properties = System.getProperties();
-    properties.put("webdriver.gecko.driver", "./geckodriver")
+    FirefoxDriverManager.getInstance().setup();
+    //val properties = System.getProperties();
+    //properties.put("webdriver.gecko.driver", "./geckodriver")
 
     val profile = if(config.profile.isDefined) {
       val filename = config.profile.get.replace("~", System.getProperty("user.home"))
