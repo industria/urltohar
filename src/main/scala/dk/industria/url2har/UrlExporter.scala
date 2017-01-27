@@ -108,8 +108,6 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
 
   private def setupDriver(): WebDriver = {
     FirefoxDriverManager.getInstance().setup();
-    //val properties = System.getProperties();
-    //properties.put("webdriver.gecko.driver", "./geckodriver")
 
     val profile = if(config.profile.isDefined) {
       val filename = config.profile.get.replace("~", System.getProperty("user.home"))
@@ -123,9 +121,12 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     
     val outputPathFull = outputPath.toAbsolutePath().toString()
 
+    profile.setPreference("devtools.netmonitor.enabled", true)
+    profile.setPreference("devtools.netmonitor.har.includeResponseBodies", true)
     profile.setPreference("devtools.netmonitor.har.forceExport", true)
     profile.setPreference("devtools.netmonitor.har.enableAutoExportToFile", true)
     profile.setPreference("devtools.netmonitor.har.defaultLogDir", outputPathFull)
+    profile.setPreference("devtools.netmonitor.statistics", true)
 
     val eventWebDriver = new EventFiringWebDriver(new FirefoxDriver(profile))
 
