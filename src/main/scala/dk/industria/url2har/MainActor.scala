@@ -75,7 +75,7 @@ class MainActor(config: Configuration) extends Actor with ActorLogging {
     case NoMoreUrls => scheduleShutdown()
     case DelayedShutdown => {
       log.info("Shutdown the application.")
-      context.system.shutdown()
+      context.system.terminate()
     }
     case _ => log.error("Unknown message")
   }

@@ -117,6 +117,12 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       new FirefoxProfile()
     }
 
+    val harExportTrigger = new File("har_export_trigger-0.5.0-beta.7-fx.xpi").getAbsoluteFile()
+    profile.addExtension(harExportTrigger)
+    profile.setPreference("extensions.netmonitor.har.contentAPIToken", "some")
+    profile.setPreference("extensions.netmonitor.har.autoConnect", true)
+    profile.setPreference("extensions.netmonitor.har.enableAutomation", true)
+
     profile.setPreference("app.update.enabled", false)
     
     val outputPathFull = outputPath.toAbsolutePath().toString()
