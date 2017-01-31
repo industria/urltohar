@@ -12,7 +12,7 @@ import scala.io.Source
 
 import io.github.bonigarcia.wdm.FirefoxDriverManager
 
-import org.openqa.selenium.{By, NoSuchElementException, TimeoutException, WebDriver, WebElement}
+import org.openqa.selenium.{By, JavascriptExecutor, NoSuchElementException, TimeoutException, WebDriver, WebElement}
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxProfile}
 import org.openqa.selenium.support.events.{AbstractWebDriverEventListener, EventFiringWebDriver, WebDriverEventListener}
 
@@ -21,7 +21,6 @@ import scala.concurrent.duration._
 class UrlExporter(config: Configuration) extends Actor with ActorLogging with WebDriverEventListener {
 
   val outputPath = FileSystems.getDefault.getPath(config.output)
-
 
   var driver: WebDriver = null
 
@@ -117,7 +116,7 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       new FirefoxProfile()
     }
 
-    val harExportTrigger = new File("har_export_trigger-0.5.0-beta.7-fx.xpi").getAbsoluteFile()
+    val harExportTrigger = new File("harexporttrigger-0.5.0-beta.10.xpi").getAbsoluteFile()
     profile.addExtension(harExportTrigger)
     profile.setPreference("extensions.netmonitor.har.contentAPIToken", "some")
     profile.setPreference("extensions.netmonitor.har.autoConnect", true)
@@ -134,7 +133,9 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     profile.setPreference("devtools.netmonitor.har.defaultLogDir", outputPathFull)
     profile.setPreference("devtools.netmonitor.statistics", true)
 
-    val eventWebDriver = new EventFiringWebDriver(new FirefoxDriver(profile))
+
+    val firefox = new FirefoxDriver(profile)
+    val eventWebDriver = new EventFiringWebDriver(firefox)
 
     eventWebDriver.manage().timeouts().pageLoadTimeout(config.pageLoadTimeout, java.util.concurrent.TimeUnit.SECONDS)
     eventWebDriver.manage().timeouts().implicitlyWait(config.pageLoadTimeout, java.util.concurrent.TimeUnit.SECONDS)
