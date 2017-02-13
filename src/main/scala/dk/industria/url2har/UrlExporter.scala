@@ -12,9 +12,14 @@ import scala.io.Source
 
 import io.github.bonigarcia.wdm.FirefoxDriverManager
 
-import org.openqa.selenium.{By, JavascriptExecutor, NoSuchElementException, TimeoutException, WebDriver, WebElement}
+import org.openqa.selenium.remote.{DesiredCapabilities,  CapabilityType}
+import org.openqa.selenium.{By, JavascriptExecutor, NoSuchElementException, Proxy, TimeoutException, WebDriver, WebElement}
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxProfile}
 import org.openqa.selenium.support.events.{AbstractWebDriverEventListener, EventFiringWebDriver, WebDriverEventListener}
+
+import net.lightbody.bmp.{BrowserMobProxy, BrowserMobProxyServer}
+import net.lightbody.bmp.client.{ClientUtil}
+import net.lightbody.bmp.proxy.{CaptureType}
 
 import scala.concurrent.duration._
 
@@ -23,6 +28,8 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
   val outputPath = FileSystems.getDefault.getPath(config.output)
 
   var driver: WebDriver = null
+
+  var proxy: BrowserMobProxy = null
 
   var beforeTime: Long = 0L
 
@@ -116,25 +123,31 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       new FirefoxProfile()
     }
 
-    val harExportTrigger = new File("harexporttrigger-0.5.0-beta.10.xpi").getAbsoluteFile()
-    profile.addExtension(harExportTrigger)
-    profile.setPreference("extensions.netmonitor.har.contentAPIToken", "some")
-    profile.setPreference("extensions.netmonitor.har.autoConnect", true)
-    profile.setPreference("extensions.netmonitor.har.enableAutomation", true)
+    proxy = new BrowserMobProxyServer();
+    proxy.start(0);
 
-    profile.setPreference("app.update.enabled", false)
-    
-    val outputPathFull = outputPath.toAbsolutePath().toString()
+    val seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
 
-    profile.setPreference("devtools.netmonitor.enabled", true)
-    profile.setPreference("devtools.netmonitor.har.includeResponseBodies", true)
-    profile.setPreference("devtools.netmonitor.har.forceExport", true)
-    profile.setPreference("devtools.netmonitor.har.enableAutoExportToFile", true)
-    profile.setPreference("devtools.netmonitor.har.defaultLogDir", outputPathFull)
-    profile.setPreference("devtools.netmonitor.statistics", true)
 
+    val capabilities = new DesiredCapabilities();
+    capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
+
+    profile.setPreference("network.proxy.http", "localhost")
+    profile.setPreference("network.proxy.http_port", proxy.getPort())
+    profile.setPreference("network.proxy.ssl", "localhost")
+    profile.setPreference("network.proxy.ssl_port", proxy.getPort())
+    profile.setPreference("network.proxy.type", 1)
+    profile.setPreference("network.proxy.share_proxy_settings", true)
+    profile.setPreference("network.proxy.socks", "localhost")
+    profile.setPreference("network.proxy.socks_port", proxy.getPort())
 
     val firefox = new FirefoxDriver(profile)
+    //val firefox = new FirefoxDriver(capabilities)
+
+    proxy.enableHarCaptureTypes(CaptureType.REQUEST_CONTENT, CaptureType.RESPONSE_CONTENT);
+
+
+
     val eventWebDriver = new EventFiringWebDriver(firefox)
 
     eventWebDriver.manage().timeouts().pageLoadTimeout(config.pageLoadTimeout, java.util.concurrent.TimeUnit.SECONDS)
@@ -142,12 +155,16 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
     eventWebDriver.register(this)
 
     eventWebDriver
+
+
   }
 
 
   private def navigateTo(sender: ActorRef, url: String) = {
 
     try {
+      proxy.newHar(url)
+
       driver.navigate.to(url)
 
       val element = driver.findElement(By.tagName("body"))
@@ -156,6 +173,13 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       if((0 < config.restart) && (config.restart <= this.restartBatchSize)) {
 	restartDriver()
       }
+
+      val outputPathFull = outputPath.toAbsolutePath().toString()
+
+      val writeFile = FileSystems.getDefault.getPath(outputPathFull, "archive" + System.currentTimeMillis() + ".har").toFile()
+
+      val har = proxy.getHar();
+      har.writeTo(writeFile)
 
       sender ! ExportedURL(url)
     } catch {
