@@ -16,10 +16,6 @@ import org.openqa.selenium.{By, NoSuchElementException, TimeoutException, WebDri
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxProfile}
 import org.openqa.selenium.support.events.{AbstractWebDriverEventListener, EventFiringWebDriver, WebDriverEventListener}
 
-import net.lightbody.bmp.{BrowserMobProxy, BrowserMobProxyServer}
-import net.lightbody.bmp.client.{ClientUtil}
-import net.lightbody.bmp.proxy.{CaptureType}
-
 import scala.concurrent.duration._
 
 class UrlExporter(config: Configuration) extends Actor with ActorLogging with WebDriverEventListener {
@@ -28,8 +24,6 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
 
 
   var driver: WebDriver = null
-
-  var proxy: BrowserMobProxy = null
 
   var beforeTime: Long = 0L
 
@@ -123,17 +117,29 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
       new FirefoxProfile()
     }
 
-    val harExportTrigger = new File("har_export_trigger-0.5.0-beta.7-fx.xpi").getAbsoluteFile()
-    profile.addExtension(harExportTrigger)
-    profile.setPreference("extensions.netmonitor.har.contentAPIToken", "some")
-    profile.setPreference("extensions.netmonitor.har.autoConnect", true)
-    profile.setPreference("extensions.netmonitor.har.enableAutomation", true)
+    profile.setPreference("app.update.enabled", false)
+    
+    val outputPathFull = outputPath.toAbsolutePath().toString()
+
+    profile.setPreference("devtools.netmonitor.enabled", true)
+    profile.setPreference("devtools.netmonitor.har.defaultLogDir", outputPathFull)
+    profile.setPreference("devtools.netmonitor.har.enableAutoExportToFile", true)
+    profile.setPreference("devtools.netmonitor.har.forceExport", true)
+    profile.setPreference("devtools.netmonitor.har.includeResponseBodies", true)
+    profile.setPreference("devtools.netmonitor.har.pageLoadedTimeout", 10000)
+    profile.setPreference("devtools.netmonitor.statistics", true)
+
+
 
     val eventWebDriver = new EventFiringWebDriver(new FirefoxDriver(profile))
 
     eventWebDriver.manage().timeouts().pageLoadTimeout(config.pageLoadTimeout, java.util.concurrent.TimeUnit.SECONDS)
     eventWebDriver.manage().timeouts().implicitlyWait(config.pageLoadTimeout, java.util.concurrent.TimeUnit.SECONDS)
     eventWebDriver.register(this)
+
+    log.info("Now turn on the toolbox - you have 30 seconds")
+
+    Thread.sleep(30000)
 
     eventWebDriver
 
@@ -144,8 +150,6 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
   private def navigateTo(sender: ActorRef, url: String) = {
 
     try {
-      proxy.newHar(url)
-
       driver.navigate.to(url)
 
       val element = driver.findElement(By.tagName("body"))
@@ -155,12 +159,9 @@ class UrlExporter(config: Configuration) extends Actor with ActorLogging with We
 	restartDriver()
       }
 
-      val outputPathFull = outputPath.toAbsolutePath().toString()
+      log.info("Waiting 30 seconds to {} to settle down", url);
+      Thread.sleep(30000)
 
-      val writeFile = FileSystems.getDefault.getPath(outputPathFull, "archive" + System.currentTimeMillis() + ".har").toFile()
-
-      val har = proxy.getHar();
-      har.writeTo(writeFile)
 
       sender ! ExportedURL(url)
     } catch {

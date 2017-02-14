@@ -22,8 +22,6 @@ libraryDependencies += "com.github.scopt" %% "scopt" % "3.5.0"
 
 libraryDependencies += "io.github.bonigarcia" % "webdrivermanager" % "1.5.1"
 
-libraryDependencies += "net.lightbody.bmp" % "browsermob-core" % "2.1.4"
-
 libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "3.0.1" % "compile"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.5" % "compile"
@@ -33,4 +31,5 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 assemblySettings
+
 
